@@ -1,9 +1,10 @@
 <script>
+	import { navigate } from 'svelte-routing';
+    import { searchData } from '../store.js';
     import { onMount } from "svelte";
     let searchInput = '';
     let searchResults = [];
     let selectedResult = null;
-    let searchData = null;
     
     async function handleSearch(event)
     {
@@ -86,7 +87,8 @@
 
             const data = await response.json();
             console.log("Server response:", data);
-            searchData = data;
+            searchData.set(data);
+            navigate('/results');
         } catch (error)
         {
             console.log("Error: ", error);
@@ -269,10 +271,5 @@
                 {/if}
             </div>
         {/each}
-    </div>
-    <div id="searchDataContainer">
-        {#if searchData}
-            <h2>{searchData}</h2>
-        {/if}
     </div>
 </div>
