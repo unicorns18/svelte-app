@@ -27,20 +27,25 @@ def search():
     print("data: %s (/search)" % data)
     search_term = data.get('search_term')
 
-    response = requests.get(
-        'https://api.themoviedb.org/3/search/movie',
-        params={
-            'api_key': 'cea9c08287d26a002386e865744fafc8',
-            'query': search_term
-        }
-    )
+    existing_search = collection.find_one({ 'search_term': search_term })
+    if existing_search:
+        results = existing_search['results']
+        print("Using cached results for search term: %s (/search)" % search_term)
+    else:
+        response = requests.get(
+            'https://api.themoviedb.org/3/search/movie',
+            params={
+                'api_key': 'cea9c08287d26a002386e865744fafc8',
+                'query': search_term
+            }
+        )
 
-    if response.status_code != 200:
-        return jsonify({'error': 'An error occurred while searching'}), 500
+        if response.status_code != 200:
+            return jsonify({'error': 'An error occurred while searching'}), 500
+        
+        results = response.json().get('results', [])
 
-    results = response.json().get('results', [])
-
-    collection.insert_one({ 'search_term': search_term, 'results': results, 'timestamp': time.time() })
+        collection.insert_one({ 'search_term': search_term, 'results': results, 'timestamp': time.time() })
 
     return jsonify(results)
 

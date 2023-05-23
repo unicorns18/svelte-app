@@ -286,7 +286,6 @@
         left: 0;
         width: 200px;
         height: auto;
-        max-height: 100vh;
         padding: 20px;
         background-color: #1a1a1a;
         border-radius: 10px;
