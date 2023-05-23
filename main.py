@@ -3,11 +3,15 @@ import os
 import sys
 import time
 sys.path.append(os.path.expanduser('~/plex-stuff/'))
-from orionoid import *
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
 from pymongo import MongoClient
+
+SEARCH_METHOD = 'ip' # or 'local'
+# TODO: make QUALITIES_SETS configurable via the UI (unicorns)
+QUALITIES_SETS = [["hd1080", "hd720"], ["hd4k"]]
+FILENAME_PREFIX = "result"
 
 client = MongoClient('mongodb://localhost:27017/')
 db = client['search_history_db']
@@ -17,9 +21,6 @@ app = Flask(__name__)
 CORS(app)
 
 TMDB_API_KEY = "cea9c08287d26a002386e865744fafc8"
-# TODO: make QUALITIES_SETS configurable via the UI (unicorns)
-QUALITIES_SETS = [["hd1080", "hd720"], ["hd4k"]]
-FILENAME_PREFIX = "result"
 
 @app.route('/search', methods=['POST'])
 def search():
@@ -93,19 +94,28 @@ def search_for_title():
     imdb_id = data.get('imdb_id')
 
     if imdb_id:
-        search_best_qualities(imdb_id, QUALITIES_SETS, FILENAME_PREFIX)
+        if SEARCH_METHOD == 'ip':
+            # Use the IP route
+            response = requests.get(f'http://206.81.16.199:1337/search_id?imdb_id={imdb_id}')
+            if response.status_code == 200:
+                results = response.json()
+            else:
+                return jsonify({'error': 'Request to external server failed'}), 500
+        else:
+            # Use the local search method
+            search_best_qualities(imdb_id, QUALITIES_SETS, FILENAME_PREFIX)
 
-        results_dir = os.path.join(os.getcwd(), 'results')
-        result_files = []
-        start_time = time.time()
-        while not result_files and time.time() - start_time < 60:  # wait up to 60 seconds
-            result_files = [f for f in os.listdir(results_dir) if f.startswith(imdb_id)]
-            time.sleep(1)  # wait a second before checking again
+            results_dir = os.path.join(os.getcwd(), 'results')
+            result_files = []
+            start_time = time.time()
+            while not result_files and time.time() - start_time < 60:  # wait up to 60 seconds
+                result_files = [f for f in os.listdir(results_dir) if f.startswith(imdb_id)]
+                time.sleep(1)  # wait a second before checking again
 
-        results = []
-        for result in result_files:
-            with open(os.path.join(results_dir, result), 'r') as f:
-                results.extend(json.load(f))  # use extend instead of append if the files contain lists
+            results = []
+            for result in result_files:
+                with open(os.path.join(results_dir, result), 'r') as f:
+                    results.extend(json.load(f))  # use extend instead of append if the files contain lists
 
         filtered_results = [result for result in results if not result.get('has_excluded_extension', False)]
         sorted_results = sorted(filtered_results, key=lambda r: r.get('score', 0), reverse=True)
