@@ -7,6 +7,11 @@ from orionoid import *
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
+from pymongo import MongoClient
+
+client = MongoClient('mongodb://localhost:27017/')
+db = client['search_history_db']
+collection = db['search_history']
 
 app = Flask(__name__)
 CORS(app)
@@ -35,7 +40,18 @@ def search():
 
     results = response.json().get('results', [])
 
+    collection.insert_one({ 'search_term': search_term, 'results': results, 'timestamp': time.time() })
+
     return jsonify(results)
+
+@app.route('/retrieve_search_history', methods=['GET'])
+def retrieve_search_history():
+    search_history = list(collection.find({}))
+
+    for item in search_history:
+        item['_id'] = str(item['_id'])
+
+    return jsonify(search_history)
 
 @app.route('/select', methods=['POST'])
 def select():

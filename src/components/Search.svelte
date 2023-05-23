@@ -4,8 +4,9 @@
     import { onMount } from "svelte";
     let searchInput = '';
     let searchResults = [];
+    let searchHistory = [];
     let selectedResult = null;
-    
+
     async function handleSearch(event)
     {
         event.preventDefault();
@@ -94,6 +95,31 @@
             console.log("Error: ", error);
         }
     }
+
+    async function fetchSearchHistory()
+    {
+        try
+        {
+            const response = await fetch('http://127.0.0.1:5000/retrieve_search_history');
+
+            if (!response.ok)
+            {
+                throw new Error("Network response was not ok, error code: " + response.status);
+            }
+
+            const data = await response.json();
+            console.log("(fetchSearchHistory) data:", data);
+            searchHistory = data;
+            // TODO: Do something with the data
+        } catch (error)
+        {
+            console.log("Error: ", error);
+        }
+    }
+
+    onMount(() => {
+        fetchSearchHistory();
+    });
 </script>
 
 <style>
@@ -101,7 +127,9 @@
 
     .container {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: stretch;
         max-width: 600px;
         margin: 0 auto;
         padding: 20px;
@@ -109,6 +137,7 @@
         border-radius: 10px;
         box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75);
         transform: translateY(50px);
+        /* margin-left: 220px; */
     }
 
     #searchBox {
@@ -247,6 +276,49 @@
         height: auto;
     }
 
+    /* Search history styling */
+    #searchHistoryContainer {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+        flex: 0 0 200px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 200px;
+        height: auto;
+        max-height: 100vh;
+        padding: 20px;
+        background-color: #1a1a1a;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+        overflow-y: auto;
+        transform: translate(-23vw, 0);
+        transition: transform 0.3s ease;
+    }
+
+    #searchHistoryContainer::-webkit-scrollbar {
+        display: none;
+    }
+
+    .searchHistoryItem {
+        background-color: #222;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;   
+    }
+
+    .searchHistoryItem:hover {
+        background-color: #333;
+        transition: none;
+    }
+
+    .searchHistoryItem h4 {
+        margin: 0;
+        color: #fff;
+    }
+
     @media (max-width: 600px) {
         .container {
             padding: 10px;
@@ -268,6 +340,14 @@
 </style>
 
 <div class="container">
+    <div id="searchHistoryContainer">
+        <h2>Search history</h2>
+        {#each searchHistory as item (item._id)}
+            <div class="searchHistoryItem">
+                <h4>{item.search_term}</h4>
+            </div>
+        {/each}
+    </div>
     <div id="searchPanel">
         <form id="searchForm" on:submit|preventDefault={handleSearch}>
             <input type="text" id="searchBox" placeholder="Search..." bind:value={searchInput}>
