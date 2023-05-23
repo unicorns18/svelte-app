@@ -96,9 +96,12 @@ def search_for_title():
     if imdb_id:
         if SEARCH_METHOD == 'ip':
             # Use the IP route
-            response = requests.get(f'http://206.81.16.199:1337/search_id?imdb_id={imdb_id}')
+            response = requests.post(f'http://206.81.16.199:1337/search_id?imdb_id={imdb_id}')
             if response.status_code == 200:
                 results = response.json()
+                filtered_results = [result for result in results if not result.get('has_excluded_extension', False)]
+                sorted_results = sorted(filtered_results, key=lambda r: r.get('score', 0), reverse=True)
+                return jsonify(sorted_results)
             else:
                 return jsonify({'error': 'Request to external server failed'}), 500
         else:
