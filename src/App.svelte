@@ -20,7 +20,7 @@
 	{/each}
 </div>
 
-<style>
+<style>	
 	#notifications {
 		position: fixed;
 		top: 10px;
