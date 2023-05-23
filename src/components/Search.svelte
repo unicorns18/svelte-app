@@ -1,6 +1,6 @@
 <script>
+    import { notify, searchData } from '../store.js';
 	import { navigate } from 'svelte-routing';
-    import { searchData } from '../store.js';
     import { onMount } from "svelte";
     let searchInput = '';
     let searchResults = [];
@@ -32,10 +32,14 @@
 
             if (!response.ok)
             {
-                throw new Error("Network response was not ok, error code: " + response.status);
+                const data = await response.json();
+                console.log("(handleSearch) error: ", data);
+                notify("error", data.error);
+                return;
             }
 
             const data = await response.json();
+            notify("success", "Search successful");
             console.log("(handleSearch) data: ", data);
             searchResults = data;
         }  catch (error)
@@ -61,10 +65,14 @@
 
             if (!response.ok)
             {
-                throw new Error("Network response was not ok, error code: " + response.status);
+                const data = await response.json();
+                console.log("(selectResult) error: ", data);
+                notify("error", data.error);
+                return;
             }
 
             const data = await response.json();
+            notify("success", "Result selected");
             console.log("(selectResult) data: ", data);
             selectedResult = { result: result, imdb_id: data.imdb_id };
         } catch (error)
@@ -89,10 +97,14 @@
 
             if (!response.ok)
             {
-                throw new Error("Network response was not ok, error code: " + response.status);
+                const data = await response.json();
+                console.log("(searchForTitle) error: ", data);
+                notify("error", data.error);
+                return;
             }
 
             const data = await response.json();
+            notify("success", "Search for title successful");
             console.log("Server response:", data);
             searchData.set(data);
             navigate('/results');
@@ -116,10 +128,14 @@
 
             if (!response.ok)
             {
-                throw new Error("Network response was not ok, error code: " + response.status);
+                const data = await response.json();
+                console.log("(fetchSearchHistory) error: ", data);
+                notify("error", data.error);
+                return;
             }
 
             const data = await response.json();
+            notify("success", "Search history retrieved");
             console.log("(fetchSearchHistory) data:", data);
             searchHistory = data;
         } catch (error)
