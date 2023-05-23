@@ -114,12 +114,24 @@
     #searchBox {
         flex-grow: 1;
         margin-right: 10px;
-        padding: 10px;
         border: none;
         background-color: #0a0a0a;
         color: #fff;
         border-radius: 5px;
         box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75);
+        outline: none;
+        font-size: 1em;
+        padding: 15px;
+    }
+
+    #searchBox::placeholder {
+        color: #777;
+    }
+
+    #searchBox:focus {
+        background-color: #0a0a0a;
+        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75), 0px 0px 10px 0px #0a0a0a;
+        outline: 2px solid #111;
     }
 
     button {
@@ -130,12 +142,12 @@
         border-radius: 5px;
         box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75);
         cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.3s ease;
+        transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     button:hover {
-        background-color: #222222;
-        transform: scale(1.1);
+        background-color: #333333;
+        transform: scale(1.10);
     }
 
     #searchResultsContainer {
@@ -220,11 +232,14 @@
     .result h2 {
         margin-top: 0;
         color: #fff;
+        font-size: 1.2em;
+        line-height: 1.5;
     }
 
     .result p {
         margin-bottom: 0;
         color: #aaa;
+        line-height: 1.5;
     }
 
     .poster {
