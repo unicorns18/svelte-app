@@ -27,6 +27,9 @@ def search():
     print("data: %s (/search)" % data)
     search_term = data.get('search_term')
 
+    if not search_term.strip():
+        return jsonify({'error': 'Search term cannot be empty'}), 400
+
     existing_search = collection.find_one({ 'search_term': search_term })
     if existing_search:
         results = existing_search['results']

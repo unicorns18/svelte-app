@@ -9,8 +9,14 @@
 
     async function handleSearch(event)
     {
-        event.preventDefault();
+        if (event) event.preventDefault();
         console.log(searchInput);
+
+        if (!searchInput.trim())
+        {
+            console.log("Search term cannot be empty");
+            return;
+        }
 
         try 
         {
@@ -96,6 +102,12 @@
         }
     }
 
+    async function handleHistorySearch(search_term)
+    {
+        searchInput = search_term;
+        await handleSearch();
+    }
+
     async function fetchSearchHistory()
     {
         try
@@ -110,7 +122,6 @@
             const data = await response.json();
             console.log("(fetchSearchHistory) data:", data);
             searchHistory = data;
-            // TODO: Do something with the data
         } catch (error)
         {
             console.log("Error: ", error);
@@ -137,7 +148,6 @@
         border-radius: 10px;
         box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75);
         transform: translateY(50px);
-        /* margin-left: 220px; */
     }
 
     #searchBox {
@@ -151,6 +161,7 @@
         outline: none;
         font-size: 1em;
         padding: 15px;
+        transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     #searchBox::placeholder {
@@ -285,7 +296,7 @@
         top: 0;
         left: 0;
         width: 200px;
-        height: ;
+        height: auto;
         padding: 20px;
         background-color: #1a1a1a;
         border-radius: 10px;
@@ -318,6 +329,17 @@
         color: #fff;
     }
 
+    .historyButton {
+        margin-top: 10px;
+        border: none;
+        background-color: #0a0a0a;
+        color: #fff;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75);
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
     @media (max-width: 600px) {
         .container {
             padding: 10px;
@@ -344,6 +366,7 @@
         {#each searchHistory.filter((item, index) => searchHistory.findIndex(i => i.search_term === item.search_term) === index) as item (item._id)}
             <div class="searchHistoryItem">
                 <h4>{item.search_term}</h4>
+                <button class="historyButton" on:click={() => handleHistorySearch(item.search_term)}>Search again</button>
             </div>
         {/each}
     </div>
