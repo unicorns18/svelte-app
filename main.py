@@ -48,6 +48,11 @@ def search():
         
         results = response.json().get('results', [])
 
+        # TODO: Change this value or make it customizable via the UI
+        if collection.count_documents({}) > 10:
+            oldest_document = collection.find().sort('timestamp', 1).limit(1)[0]
+            collection.delete_one({ '_id': oldest_document['_id'] })
+
         collection.insert_one({ 'search_term': search_term, 'results': results, 'timestamp': time.time() })
 
     return jsonify(results)
