@@ -285,7 +285,7 @@
         top: 0;
         left: 0;
         width: 200px;
-        height: auto;
+        height: ;
         padding: 20px;
         background-color: #1a1a1a;
         border-radius: 10px;
@@ -341,7 +341,7 @@
 <div class="container">
     <div id="searchHistoryContainer">
         <h2>Search history</h2>
-        {#each searchHistory as item (item._id)}
+        {#each searchHistory.filter((item, index) => searchHistory.findIndex(i => i.search_term === item.search_term) === index) as item (item._id)}
             <div class="searchHistoryItem">
                 <h4>{item.search_term}</h4>
             </div>
