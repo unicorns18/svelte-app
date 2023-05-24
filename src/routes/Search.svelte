@@ -1,6 +1,7 @@
 <script>
 	import { notify, searchData } from '../store.js';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	let searchInput = '';
 	/**
 	 * @type {any[]}
@@ -28,14 +29,15 @@
 		}
 
 		try {
+<<<<<<< HEAD
 			const response = await fetch('http://localhost:6942/search', {
 				method: 'POST',
+=======
+			const response = await fetch(`/api/search?query=${searchInput}`, {
+>>>>>>> 93d55e39844b2cbfa094c79287b041264cbf3f0c
 				headers: {
 					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					search_term: searchInput
-				})
+				}
 			});
 
 			if (!response.ok) {
@@ -58,6 +60,7 @@
 	 * @param {{ title: any; id: any; }} result
 	 */
 	async function selectResult(result) {
+<<<<<<< HEAD
 		try {
 			const response = await fetch('http://127.0.0.1:69420/select', {
 				method: 'POST',
@@ -69,21 +72,38 @@
 					id: result.id // Result's ID
 				})
 			});
+=======
+		console.log(result);
+>>>>>>> 93d55e39844b2cbfa094c79287b041264cbf3f0c
 
-			if (!response.ok) {
-				const data = await response.json();
-				console.log('(selectResult) error: ', data);
-				notify('error', data.error);
-				return;
-			}
+		goto(`/movie/${result.id}`);
 
-			const data = await response.json();
-			notify('success', 'Result selected');
-			console.log('(selectResult) data: ', data);
-			selectedResult = { result: result, imdb_id: data.imdb_id };
-		} catch (error) {
-			console.log('Error: ', error);
-		}
+		// try {
+		// 	const response = await fetch('http://127.0.0.1:5000/select', {
+		// 		method: 'POST',
+		// 		headers: {
+		// 			'Content-Type': 'application/json'
+		// 		},
+		// 		body: JSON.stringify({
+		// 			title: result.title, // Result's title
+		// 			id: result.id // Result's ID
+		// 		})
+		// 	});
+
+		// 	if (!response.ok) {
+		// 		const data = await response.json();
+		// 		console.log('(selectResult) error: ', data);
+		// 		notify('error', data.error);
+		// 		return;
+		// 	}
+
+		// 	const data = await response.json();
+		// 	notify('success', 'Result selected');
+		// 	console.log('(selectResult) data: ', data);
+		// 	selectedResult = { result: result, imdb_id: data.imdb_id };
+		// } catch (error) {
+		// 	console.log('Error: ', error);
+		// }
 	}
 
 	/**
@@ -91,14 +111,15 @@
 	 */
 	async function searchForTitle(imdb_id) {
 		try {
+<<<<<<< HEAD
 			const response = await fetch('http://127.0.0.1:6942/search_for_title', {
 				method: 'POST',
+=======
+			const response = await fetch('/api/search', {
+>>>>>>> 93d55e39844b2cbfa094c79287b041264cbf3f0c
 				headers: {
 					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					imdb_id: imdb_id
-				})
+				}
 			});
 
 			if (!response.ok) {
