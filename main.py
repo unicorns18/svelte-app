@@ -1,13 +1,13 @@
+from dotenv import load_dotenv
+from pymongo import MongoClient
+import requests
+from flask_cors import CORS
+from flask import Flask, request, jsonify
 import json
 import os
 import sys
 import time
 sys.path.append(os.path.expanduser('~/plex-stuff/'))
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import requests
-from pymongo import MongoClient
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -16,17 +16,19 @@ SEARCH_METHOD = os.getenv('SEARCH_METHOD')  # 'ip' or 'local'
 QUALITIES_SETS = [["hd1080", "hd720"], ["hd4k"]]
 FILENAME_PREFIX = "result"
 
-client = MongoClient(os.getenv('MONGO_URI', 'mongodb://localhost:27017/'))
-db_name = os.getenv('MONGO_DB', 'search_history_db')
-collection_name = os.getenv('MONGO_COLLECTION', 'search_history')
-db = client[db_name]
-collection = db[collection_name]
-print("db: %s, collection: %s" % (db, collection))
+if SEARCH_METHOD != 'local':
+    client = MongoClient(os.getenv('MONGO_URI', 'mongodb://localhost:27017/'))
+    db_name = os.getenv('MONGO_DB', 'search_history_db')
+    collection_name = os.getenv('MONGO_COLLECTION', 'search_history')
+    db = client[db_name]
+    collection = db[collection_name]
+    print("db: %s, collection: %s" % (db, collection))
 
 app = Flask(__name__)
 CORS(app)
 
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
+
 
 @app.route('/search', methods=['POST'])
 def search():
@@ -37,7 +39,11 @@ def search():
     if not search_term.strip():
         return jsonify({'error': 'Search term cannot be empty'}), 400
 
-    existing_search = collection.find_one({ 'search_term': search_term })
+    if SEARCH_METHOD != 'local':
+        existing_search = collection.find_one({'search_term': search_term})
+    else:
+        existing_search = False
+
     if existing_search:
         results = existing_search['results']
         print("Using cached results for search term: %s (/search)" % search_term)
@@ -52,17 +58,20 @@ def search():
 
         if response.status_code != 200:
             return jsonify({'error': 'An error occurred while searching'}), 500
-        
+
         results = response.json().get('results', [])
 
         # TODO: Change this value or make it customizable via the UI
-        if collection.count_documents({}) > 10:
-            oldest_document = collection.find().sort('timestamp', 1).limit(1)[0]
-            collection.delete_one({ '_id': oldest_document['_id'] })
-
-        collection.insert_one({ 'search_term': search_term, 'results': results, 'timestamp': time.time() })
+        if SEARCH_METHOD != 'local':
+            if collection.count_documents({}) > 10:
+                oldest_document = collection.find().sort(
+                    'timestamp', 1).limit(1)[0]
+                collection.delete_one({'_id': oldest_document['_id']})
+            collection.insert_one(
+                {'search_term': search_term, 'results': results, 'timestamp': time.time()})
 
     return jsonify(results)
+
 
 @app.route('/retrieve_search_history', methods=['GET'])
 def retrieve_search_history():
@@ -72,6 +81,7 @@ def retrieve_search_history():
         item['_id'] = str(item['_id'])
 
     return jsonify(search_history)
+
 
 @app.route('/select', methods=['POST'])
 def select():
@@ -90,8 +100,10 @@ def select():
 
     imdb_id = details.get('imdb_id', None)
 
-    print("response: {'title': %s, 'imdb_id': %s} (/select)" % (title, imdb_id))
+    print(
+        "response: {'title': %s, 'imdb_id': %s} (/select)" % (title, imdb_id))
     return jsonify({'title': title, 'imdb_id': imdb_id})
+
 
 @app.route('/search_for_title', methods=['POST'])
 def search_for_title():
@@ -104,11 +116,14 @@ def search_for_title():
             headers = {
                 'apikey': os.getenv('API_KEY')
             }
-            response = requests.post(f'http://206.81.16.199:1337/search_id?imdb_id={imdb_id}', headers=headers)
+            response = requests.post(
+                f'http://206.81.16.199:1337/search_id?imdb_id={imdb_id}', headers=headers)
             if response.status_code == 200:
                 results = response.json()
-                filtered_results = [result for result in results if not result.get('has_excluded_extension', False)]
-                sorted_results = sorted(filtered_results, key=lambda r: r.get('score', 0), reverse=True)
+                filtered_results = [result for result in results if not result.get(
+                    'has_excluded_extension', False)]
+                sorted_results = sorted(
+                    filtered_results, key=lambda r: r.get('score', 0), reverse=True)
                 return jsonify(sorted_results)
             else:
                 return jsonify({'error': 'Request to external server failed'}), 500
@@ -120,22 +135,27 @@ def search_for_title():
             result_files = []
             start_time = time.time()
             while not result_files and time.time() - start_time < 60:  # wait up to 60 seconds
-                result_files = [f for f in os.listdir(results_dir) if f.startswith(imdb_id)]
+                result_files = [f for f in os.listdir(
+                    results_dir) if f.startswith(imdb_id)]
                 time.sleep(1)  # wait a second before checking again
 
             results = []
             for result in result_files:
                 with open(os.path.join(results_dir, result), 'r') as f:
-                    results.extend(json.load(f))  # use extend instead of append if the files contain lists
+                    # use extend instead of append if the files contain lists
+                    results.extend(json.load(f))
 
-        filtered_results = [result for result in results if not result.get('has_excluded_extension', False)]
-        sorted_results = sorted(filtered_results, key=lambda r: r.get('score', 0), reverse=True)
+        filtered_results = [result for result in results if not result.get(
+            'has_excluded_extension', False)]
+        sorted_results = sorted(
+            filtered_results, key=lambda r: r.get('score', 0), reverse=True)
 
         print("Results: %s (/search_for_title)" % sorted_results)
 
         return jsonify(sorted_results)
     else:
         return jsonify({'error': 'No IMDb ID provided'}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
