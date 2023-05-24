@@ -11,15 +11,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SEARCH_METHOD = os.getenv('SEARCH_METHOD')
-# SEARCH_METHOD = 'ip' # or 'local'
+SEARCH_METHOD = os.getenv('SEARCH_METHOD')  # 'ip' or 'local'
 # TODO: make QUALITIES_SETS configurable via the UI (unicorns)
 QUALITIES_SETS = [["hd1080", "hd720"], ["hd4k"]]
 FILENAME_PREFIX = "result"
 
 client = MongoClient(os.getenv('MONGO_URI', 'mongodb://localhost:27017/'))
-db = os.getenv('MONGO_DB', 'search_history_db')
-collection = os.getenv('MONGO_COLLECTION', 'search_history')
+db_name = os.getenv('MONGO_DB', 'search_history_db')
+collection_name = os.getenv('MONGO_COLLECTION', 'search_history')
+db = client[db_name]
+collection = db[collection_name]
+print("db: %s, collection: %s" % (db, collection))
 
 app = Flask(__name__)
 CORS(app)
@@ -43,7 +45,7 @@ def search():
         response = requests.get(
             'https://api.themoviedb.org/3/search/movie',
             params={
-                'api_key': 'cea9c08287d26a002386e865744fafc8',
+                'api_key': TMDB_API_KEY,
                 'query': search_term
             }
         )
@@ -64,7 +66,7 @@ def search():
 
 @app.route('/retrieve_search_history', methods=['GET'])
 def retrieve_search_history():
-    search_history = list(collection.find({}))
+    search_history = list(collection.find({}).sort([('timestamp', -1)]))
 
     for item in search_history:
         item['_id'] = str(item['_id'])
@@ -99,12 +101,10 @@ def search_for_title():
 
     if imdb_id:
         if SEARCH_METHOD == 'ip':
-            # Use the IP route
-            # Add apikey to the headers
             headers = {
                 'apikey': os.getenv('API_KEY')
             }
-            response = requests.post(f'http://206.81.16.199:1337/search_id?imdb_id={imdb_id}')
+            response = requests.post(f'http://206.81.16.199:1337/search_id?imdb_id={imdb_id}', headers=headers)
             if response.status_code == 200:
                 results = response.json()
                 filtered_results = [result for result in results if not result.get('has_excluded_extension', False)]
