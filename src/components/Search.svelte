@@ -318,7 +318,7 @@
         border-radius: 10px;
         box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
         overflow-y: auto;
-        transform: translate(-23vw, 0);
+        transform: translate(-24vw, 0);
         transition: transform 0.3s ease;
     }
 
@@ -392,17 +392,19 @@
             <button type="submit">Search</button>
         </form>
     </div>
-    <div id="searchResultsContainer">
-        {#each searchResults as result (result.id)} <!-- assumes each result has an ID property -->
-            <div class="result" on:click={() => selectResult(result)} on:keydown={(event) => event.key === 'Enter' && selectResult(result)}>
-                <h2>{result.title}</h2>
-                <p>{result.overview}</p>
-                <p>Release date: {result.release_date}</p>
-                {#if selectedResult && selectedResult.result.id == result.id}
-                    <img class="poster" src=https://image.tmdb.org/t/p/w500{result.poster_path} alt="{result.title} poster">
-                    <button class="searchButton" on:click|stopPropagation={() => searchForTitle(selectedResult.imdb_id)}>Search for this title</button>
-                {/if}
-            </div>
-        {/each}
+    <div id="searchResultsPanel">
+        <div id="searchResultsContainer">
+            {#each searchResults as result (result.id)} <!-- assumes each result has an ID property -->
+                <div class="result" on:click={() => selectResult(result)} on:keydown={(event) => event.key === 'Enter' && selectResult(result)}>
+                    <h2>{result.title}</h2>
+                    <p>{result.overview}</p>
+                    <p>Release date: {result.release_date}</p>
+                    {#if selectedResult && selectedResult.result.id == result.id}
+                        <img class="poster" src=https://image.tmdb.org/t/p/w500{result.poster_path} alt="{result.title} poster">
+                        <button class="searchButton" on:click|stopPropagation={() => searchForTitle(selectedResult.imdb_id)}>Search for this title</button>
+                    {/if}
+                </div>
+            {/each}
+        </div>
     </div>
 </div>

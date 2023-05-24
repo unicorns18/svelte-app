@@ -7,20 +7,24 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
 from pymongo import MongoClient
+from dotenv import load_dotenv
 
-SEARCH_METHOD = 'ip' # or 'local'
+load_dotenv()
+
+SEARCH_METHOD = os.getenv('SEARCH_METHOD')
+# SEARCH_METHOD = 'ip' # or 'local'
 # TODO: make QUALITIES_SETS configurable via the UI (unicorns)
 QUALITIES_SETS = [["hd1080", "hd720"], ["hd4k"]]
 FILENAME_PREFIX = "result"
 
-client = MongoClient('mongodb://localhost:27017/')
-db = client['search_history_db']
-collection = db['search_history']
+client = MongoClient(os.getenv('MONGO_URI', 'mongodb://localhost:27017/'))
+db = os.getenv('MONGO_DB', 'search_history_db')
+collection = os.getenv('MONGO_COLLECTION', 'search_history')
 
 app = Flask(__name__)
 CORS(app)
 
-TMDB_API_KEY = "cea9c08287d26a002386e865744fafc8"
+TMDB_API_KEY = os.getenv('TMDB_API_KEY')
 
 @app.route('/search', methods=['POST'])
 def search():
@@ -96,6 +100,10 @@ def search_for_title():
     if imdb_id:
         if SEARCH_METHOD == 'ip':
             # Use the IP route
+            # Add apikey to the headers
+            headers = {
+                'apikey': os.getenv('API_KEY')
+            }
             response = requests.post(f'http://206.81.16.199:1337/search_id?imdb_id={imdb_id}')
             if response.status_code == 200:
                 results = response.json()
