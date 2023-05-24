@@ -28,7 +28,7 @@
 		}
 
 		try {
-			const response = await fetch('http://localhost:5000/search', {
+			const response = await fetch('http://localhost:6942/search', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -59,7 +59,7 @@
 	 */
 	async function selectResult(result) {
 		try {
-			const response = await fetch('http://127.0.0.1:5000/select', {
+			const response = await fetch('http://127.0.0.1:69420/select', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -91,7 +91,7 @@
 	 */
 	async function searchForTitle(imdb_id) {
 		try {
-			const response = await fetch('http://127.0.0.1:5000/search_for_title', {
+			const response = await fetch('http://127.0.0.1:6942/search_for_title', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -128,7 +128,7 @@
 
 	async function fetchSearchHistory() {
 		try {
-			const response = await fetch('http://127.0.0.1:5000/retrieve_search_history');
+			const response = await fetch('http://127.0.0.1:6942/retrieve_search_history');
 
 			if (!response.ok) {
 				const data = await response.json();

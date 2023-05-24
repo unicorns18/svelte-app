@@ -8,6 +8,7 @@ import os
 import sys
 import time
 sys.path.append(os.path.expanduser('~/plex-stuff/'))
+from uploader import process_magnet
 
 load_dotenv()
 
@@ -22,13 +23,23 @@ if SEARCH_METHOD != 'local':
     collection_name = os.getenv('MONGO_COLLECTION', 'search_history')
     db = client[db_name]
     collection = db[collection_name]
-    print("db: %s, collection: %s" % (db, collection))
+    # print("db: %s, collection: %s" % (db, collection))
 
 app = Flask(__name__)
 CORS(app)
 
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
 
+@app.route('/upload_to_debrid', methods=['POST'])
+def upload_to_debrid():
+    magnet = request.args.get('magnet')
+
+    if not magnet:
+        return jsonify({'error': 'Magnet is required'}), 400
+    
+    process_magnet(magnet)
+
+    return jsonify({'success': 'Magnet added to debrid!'})
 
 @app.route('/search', methods=['POST'])
 def search():
@@ -105,6 +116,8 @@ def select():
     return jsonify({'title': title, 'imdb_id': imdb_id})
 
 
+
+
 @app.route('/search_for_title', methods=['POST'])
 def search_for_title():
     data = request.get_json()
@@ -158,4 +171,4 @@ def search_for_title():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=6942)
