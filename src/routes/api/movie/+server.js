@@ -3,30 +3,26 @@ import { error, json } from '@sveltejs/kit';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const TMDB_API_URL = 'https://www.omdbapi.com/';
-const OMDB_API_URL = 'https://www.omdbapi.com/';
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
-const MDB_API_KEY = '';
+const MDB_API_KEY = process.env.MDB_API_KEY;
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ url }) {
 	const query = url.searchParams.get('query');
-	// console.log(url);
 
 	if (!query) {
 		throw error(400, 'Invalid Query');
 	}
 
-	const { results } = await getTMDBData({
-		type: 'SEARCH_MOVIE',
-		query: query
+	const res = await getMovieInfo({
+		id: query
 	});
 
-	return json(results);
+	return json(res);
 }
 
 async function getTMDBData({ type, id, season, ep, ...data }) {
-	console.log(type, id, season, ep);
+	// console.log(type, id, season, ep);
 	const API_URL = new URL(`https://api.themoviedb.org/3/${getURLByType(type, id, season, ep)}`);
 
 	API_URL.searchParams.append('api_key', TMDB_API_KEY);
@@ -38,7 +34,7 @@ async function getTMDBData({ type, id, season, ep, ...data }) {
 	if (type != 'SEARCH') {
 		API_URL.searchParams.append('append_to_response', 'credits');
 	}
-	console.log('URL: ', API_URL);
+	// console.log('URL: ', API_URL);
 	const apiRes = await fetch(API_URL.href);
 
 	return apiRes.json();
@@ -80,7 +76,7 @@ async function getMovieInfo(choice) {
 		})
 	]);
 
-	console.log(mdbRes, tmdbRes);
+	// console.log(mdbRes, tmdbRes);
 
 	const imdbRating = mdbRes.ratings.find((rating) => rating.source === 'imdb');
 	const metacriticRating = mdbRes.ratings.find((rating) => rating.source === 'metacritic');
@@ -211,16 +207,15 @@ async function getMDBData(data) {
 		API_URL.searchParams.append(key, value);
 	}
 
-	const apiRes = await request({
-		url: API_URL.href,
+	const apiRes = await fetch(API_URL.href, {
 		method: 'GET',
 		cache: 'no-cache',
 		headers: {
 			'Content-Type': 'application/json'
 		}
 	});
-	console.log('URL: ', API_URL);
-	return JSON.parse(apiRes);
+	// console.log('URL: ', API_URL);
+	return apiRes.json();
 }
 
 function linkifyList(list, type) {
