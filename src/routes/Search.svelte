@@ -29,12 +29,7 @@
 		}
 
 		try {
-<<<<<<< HEAD
-			const response = await fetch('http://localhost:6942/search', {
-				method: 'POST',
-=======
 			const response = await fetch(`/api/search?query=${searchInput}`, {
->>>>>>> 93d55e39844b2cbfa094c79287b041264cbf3f0c
 				headers: {
 					'Content-Type': 'application/json'
 				}
@@ -60,21 +55,7 @@
 	 * @param {{ title: any; id: any; }} result
 	 */
 	async function selectResult(result) {
-<<<<<<< HEAD
-		try {
-			const response = await fetch('http://127.0.0.1:69420/select', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					title: result.title, // Result's title
-					id: result.id // Result's ID
-				})
-			});
-=======
 		console.log(result);
->>>>>>> 93d55e39844b2cbfa094c79287b041264cbf3f0c
 
 		goto(`/movie/${result.id}`);
 
@@ -111,12 +92,7 @@
 	 */
 	async function searchForTitle(imdb_id) {
 		try {
-<<<<<<< HEAD
-			const response = await fetch('http://127.0.0.1:6942/search_for_title', {
-				method: 'POST',
-=======
 			const response = await fetch('/api/search', {
->>>>>>> 93d55e39844b2cbfa094c79287b041264cbf3f0c
 				headers: {
 					'Content-Type': 'application/json'
 				}
