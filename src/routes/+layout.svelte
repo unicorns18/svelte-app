@@ -1,12 +1,15 @@
 <script>
-	import Header from './Header.svelte';
+	// import Header from './Header.svelte';
+
+	import Sidebar from '../components/Sidebar.svelte';
+
 	import './styles.css';
 	import { notifications, notify } from '../store.js';
 </script>
 
 <div class="app">
-	<Header />
-
+	<!-- <Header /> -->
+	<Sidebar />
 	<main>
 		<slot />
 	</main>
@@ -25,19 +28,23 @@
 
 	.app {
 		display: flex;
-		flex-direction: column;
 		min-height: 100vh;
+		width: 100%;
 	}
 
 	main {
-		flex: 1;
+		flex-grow: 1;
+		padding: 16px;
 		display: flex;
 		flex-direction: column;
 		padding: 1rem;
-		width: 100%;
-		max-width: 64rem;
+		width: 80%;
 		margin: 0 auto;
 		box-sizing: border-box;
+		height: 400vh;
+		margin-left: 16%;
+		background-color: orange;
+		overflow: none;
 	}
 
 	#notifications {
